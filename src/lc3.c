@@ -53,17 +53,22 @@ inline uint16_t mem_read(uint16_t addr)
 
 /* Getting OP code */
 #define OP_CODE(ins) ins >> 12
-/* Getting destination */
+
+/* Getting destination operand */
 #define DST(ins) (ins >> 9) & 0x7
 /* Getting first operand */
 #define SR1_OP(ins) (ins >> 6) & 0x7
 /* Getting second operand */
 #define SR2_OP(ins) ins & 0x7
+/* Getting base register operand */
+#define BR_OP(ins) SR1_OP(ins)
 /* Getting immediate operand */
-#define IMM_OP(ins) ins & 0x1F
+#define IMM_OP(ins) ins & 0x1f
 
 /* Getting immediate flag bit */
 #define IMM_FL(ins) (ins >> 5) & 0x1
+/* Getting condition flag */
+#define COND_FL(ins) DST(ins)
 
 int main(int argc, char* argv[])
 {
@@ -75,7 +80,12 @@ int main(int argc, char* argv[])
         uint16_t ins = mem_read(reg[R_PC]++);
         uint16_t r0, r1;
         switch(OP_CODE(ins)){
-            case OP_ADD:;
+            case OP_BR:
+            if(COND_FL(ins) & reg[R_COND])
+                reg[R_PC] += sign_extend(ins & 0x1ff, 9);
+            break;
+
+            case OP_ADD:
                 r0 = DST(ins);
                 r1 = SR1_OP(ins);
                 if (IMM_FL(ins)) {
@@ -89,7 +99,12 @@ int main(int argc, char* argv[])
             case OP_LD:
                 break;
 
-            case OP_AND:;
+            case OP_JSR:
+                // TODO: JSR op
+                // If 11th set then JSR else JSRR
+                break;
+
+            case OP_AND:
                 r0 = DST(ins);
                 r1 = SR1_OP(ins);
                 if(IMM_FL(ins)) {
@@ -100,16 +115,20 @@ int main(int argc, char* argv[])
                 update_flags(r0);
                 break;
 
-            case OP_NOT:;
+            case OP_NOT:
                 r0 = DST(ins);
                 reg[r0] = ~reg[SR1_OP(ins)];
                 update_flags(r0);
                 break;
 
-            case OP_LDI:;
+            case OP_LDI:
                 r0 = DST(ins);
                 reg[r0] = mem_read(mem_read(reg[R_PC] + sign_extend(ins & 0x1ff, 9)));
                 update_flags(r0);
+                break;
+
+            case OP_JMP:
+                reg[R_PC] = BR_OP(ins);
                 break;
 
             default:
