@@ -69,7 +69,8 @@ inline uint16_t mem_read(uint16_t addr)
 #define IMM_FL(ins) (ins >> 5) & 0x1
 /* Getting condition flag */
 #define COND_FL(ins) DST(ins)
-
+/* Getting long flag */
+#define LNG_FL(ins) (ins >> 11) & 1
 int main(int argc, char* argv[])
 {
     enum { PC_START = 0x3000 };
@@ -100,8 +101,12 @@ int main(int argc, char* argv[])
                 break;
 
             case OP_JSR:
-                // TODO: JSR op
-                // If 11th set then JSR else JSRR
+                reg[R_R7] = reg[R_PC];
+                if(LNG_FL(ins)){
+                    reg[R_PC] += sign_extend(ins & 0x7ff, 11);
+                } else {
+                    reg[R_PC] = reg[BR_OP(ins)];
+                }
                 break;
 
             case OP_AND:
