@@ -4,6 +4,7 @@
 
 #include "register.h"
 #include "opcode.h"
+#include "lc3.h"
 
 enum {
     FL_POS = 1 << 0,
@@ -45,7 +46,6 @@ inline void mem_write(uint16_t addr, uint16_t val)
 {
     mem[addr] = val;
 }
-
 inline uint16_t mem_read(uint16_t addr)
 {
     return mem[addr];
