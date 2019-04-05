@@ -98,6 +98,9 @@ int main(int argc, char* argv[])
                 break;
 
             case OP_LD:
+                r0 = DST(ins);
+                reg[r0] = mem_read(reg[R_PC] + sign_extend(ins & 0x1ff, 9));
+                update_flags(r0);
                 break;
 
             case OP_JSR:
