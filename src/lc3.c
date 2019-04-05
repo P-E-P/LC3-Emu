@@ -54,11 +54,16 @@ inline uint16_t mem_read(uint16_t addr)
 /* Getting OP code */
 #define OP_CODE(ins) ins >> 12
 /* Getting destination */
-#define DEST(ins) (ins >> 9) & 0x7
+#define DST(ins) (ins >> 9) & 0x7
 /* Getting first operand */
-#define FST_OP(ins) (ins >> 6) & 0x7
-/* Getting second operand */ 
-#define SND_OP(ins) ins & 0x7
+#define SR1_OP(ins) (ins >> 6) & 0x7
+/* Getting second operand */
+#define SR2_OP(ins) ins & 0x7
+/* Getting immediate operand */
+#define IMM_OP(ins) ins & 0x1F
+
+/* Getting immediate flag bit */
+#define IMM_FL(ins) (ins >> 5) & 0x1
 
 int main(int argc, char* argv[])
 {
@@ -68,20 +73,45 @@ int main(int argc, char* argv[])
     int running = 1;
     while (running){
         uint16_t ins = mem_read(reg[R_PC]++);
+        uint16_t r0, r1;
         switch(OP_CODE(ins)){
             case OP_ADD:;
-                uint16_t r0 = DEST(ins);
-                uint16_t r1 = FST_OP(ins);
-                /* If we add an immediate value */
-                if ((ins >> 5) & 0x1) {
-                    reg[r0] = reg[r1] + sign_extend(ins & 0x1F, 5);
+                r0 = DST(ins);
+                r1 = SR1_OP(ins);
+                if (IMM_FL(ins)) {
+                    reg[r0] = reg[r1] + sign_extend(IMM_OP(ins), 5);
                 } else {
-                    reg[r0] = reg[r1] + reg[SND_OP(ins)];
+                    reg[r0] = reg[r1] + reg[SR2_OP(ins)];
                 }
                 update_flags(r0);
                 break;
-            case OP_AND:
+
+            case OP_LD:
                 break;
+
+            case OP_AND:;
+                r0 = DST(ins);
+                r1 = SR1_OP(ins);
+                if(IMM_FL(ins)) {
+                    reg[r0] = reg[r1] & sign_extend(IMM_OP(ins), 5);
+                } else {
+                    reg[r0] = reg[r1] & reg[SR2_OP(ins)];
+                }
+                update_flags(r0);
+                break;
+
+            case OP_NOT:;
+                r0 = DST(ins);
+                reg[r0] = ~reg[SR1_OP(ins)];
+                update_flags(r0);
+                break;
+
+            case OP_LDI:;
+                r0 = DST(ins);
+                reg[r0] = mem_read(mem_read(reg[R_PC] + sign_extend(ins & 0x1ff, 9)));
+                update_flags(r0);
+                break;
+
             default:
                 printf("Bad OP code encountered, aborting...");
                 abort();

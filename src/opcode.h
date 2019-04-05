@@ -1,5 +1,5 @@
 enum {
-    P_BR = 0,
+    OP_BR = 0,
     OP_ADD,
     OP_LD,
     OP_ST,
