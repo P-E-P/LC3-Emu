@@ -103,6 +103,10 @@ int main(int argc, char* argv[])
                 update_flags(r0);
                 break;
 
+            case OP_ST:
+                mem_write(reg[R_PC] + sign_extend(ins & 0x1ff, 9), reg[DST(ins)]);
+                break;
+
             case OP_JSR:
                 reg[R_R7] = reg[R_PC];
                 if(LNG_FL(ins)){
@@ -123,6 +127,16 @@ int main(int argc, char* argv[])
                 update_flags(r0);
                 break;
 
+            case OP_LDR:
+                r0 = DST(ins);
+                reg[r0] = mem_read(reg[SR1_OP(ins)] + sign_extend(ins & 0x3f, 6));
+                update_flags(r0);
+                break;
+
+            case OP_STR:
+                mem_write(reg[SR1_OP(ins)] + sign_extend(ins & 0x3f, 6), reg[DST(ins)]);
+                break;
+
             case OP_NOT:
                 r0 = DST(ins);
                 reg[r0] = ~reg[SR1_OP(ins)];
@@ -135,8 +149,18 @@ int main(int argc, char* argv[])
                 update_flags(r0);
                 break;
 
+            case OP_STI:
+                mem_write(mem_read(reg[R_PC] + sign_extend(ins & 0x1ff, 9)), reg[DST(ins)]);
+                break;
+
             case OP_JMP:
                 reg[R_PC] = BR_OP(ins);
+                break;
+
+            case OP_LEA:
+                r0 = DST(ins);
+                reg[r0] = reg[R_PC] + sign_extend(ins & 0x1ff, 9);
+                update_flags(r0);
                 break;
 
             default:
