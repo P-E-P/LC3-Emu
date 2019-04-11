@@ -4,6 +4,7 @@
 
 #include "register.h"
 #include "opcode.h"
+#include "trap.h"
 #include "lc3.h"
 
 enum {

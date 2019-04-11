@@ -1,3 +1,6 @@
+#ifndef _OPCODE_H
+#define _OPCODE_H
+
 enum {
     OP_BR = 0,
     OP_ADD,
@@ -16,3 +19,5 @@ enum {
     OP_LEA,
     OP_TRAP
 };
+
+#endif

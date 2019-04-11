@@ -1,3 +1,6 @@
+#ifndef _REGISTER_H
+#define _REGISTER_H
+
 enum {
     R_R0 = 0,
     R_R1,
@@ -11,3 +14,5 @@ enum {
     R_COND,
     R_COUNT
 };
+
+#endif
