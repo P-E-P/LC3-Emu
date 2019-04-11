@@ -83,9 +83,9 @@ int main(int argc, char* argv[])
         uint16_t r0, r1;
         switch(OP_CODE(ins)){
             case OP_BR:
-            if(COND_FL(ins) & reg[R_COND])
-                reg[R_PC] += sign_extend(ins & 0x1ff, 9);
-            break;
+                if(COND_FL(ins) & reg[R_COND])
+                    reg[R_PC] += sign_extend(ins & 0x1ff, 9);
+                break;
 
             case OP_ADD:
                 r0 = DST(ins);
@@ -162,6 +162,18 @@ int main(int argc, char* argv[])
                 r0 = DST(ins);
                 reg[r0] = reg[R_PC] + sign_extend(ins & 0x1ff, 9);
                 update_flags(r0);
+                break;
+
+            case OP_TRAP:
+                switch(ins & 0xFF){
+                    case TRAP_HALT:
+                        running = 0;
+                        break;
+                    default:
+                        printf("Bad trap signal encountered, aborting...");
+                        abort();
+                        break;
+                }
                 break;
 
             default:
