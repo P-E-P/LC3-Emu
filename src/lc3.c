@@ -72,6 +72,11 @@ inline uint16_t mem_read(uint16_t addr)
 #define COND_FL(ins) DST(ins)
 /* Getting long flag */
 #define LNG_FL(ins) (ins >> 11) & 1
+
+
+#define DWN_CHAR(car) car & 0xff
+#define UP_CHAR(car) car >> 8
+
 int main(int argc, char* argv[])
 {
     enum { PC_START = 0x3000 };
@@ -79,8 +84,13 @@ int main(int argc, char* argv[])
 
     int running = 1;
     while (running){
+
         uint16_t ins = mem_read(reg[R_PC]++);
+
         uint16_t r0, r1;
+        uint16_t* car;
+        char character;
+
         switch(OP_CODE(ins)){
             case OP_BR:
                 if(COND_FL(ins) & reg[R_COND])
@@ -170,9 +180,40 @@ int main(int argc, char* argv[])
 
             case OP_TRAP:
                 switch(ins & 0xFF){
+                    case TRAP_OUT:
+                        putc((char)reg[R_R0], stdout);
+                        fflush(stdout);
+                        break;
+
+                    case TRAP_PUTS:
+                        car = mem + reg[R_R0];
+                        while(*car) {
+                            putc((char)*car, stdout);
+                            ++car;
+                        }
+                        fflush(stdout);
+                        break;
+
+                    case TRAP_IN:
+                        reg[R_R0] = (uint16_t) getchar();
+                        break;
+
+                    case TRAP_PUTSP:
+                        car = mem + reg[R_R0];
+                        while(*car) {
+                            putc(DWN_CHAR(*car), stdout);
+                            character = UP_CHAR(*car);
+                            if(character)
+                                putc(character, stdout);
+                            ++car;
+                        }
+                        fflush(stdout);
+                        break;
+
                     case TRAP_HALT:
                         running = 0;
                         break;
+
                     default:
                         printf("Bad trap signal encountered, aborting...");
                         abort();
