@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <endian.h>
 
 #include "register.h"
 #include "opcode.h"
@@ -30,6 +31,42 @@ uint16_t swap16(uint16_t x)
     return (x << 8) | (x >> 8);
 }
 
+void readff(FILE* file)
+{
+    uint16_t ori;
+    fread(&ori, sizeof(ori), 1, file);
+
+    /* We prefer to check if we're not in big endian since they
+     * are rarer nowadays and endian.h is not a C standard.
+     */
+    #ifndef BIG_ENDIAN
+    ori = swap16(ori);
+    #endif
+
+    uint16_t maxr = UINT16_MAX - ori;
+    uint16_t* ptr = mem + ori;
+
+
+    size_t r = fread(ptr, sizeof(uint16_t), maxr, file);
+
+    #ifndef BIG_ENDIAN
+    while(r-- > 0) {
+        *ptr = swap16(*ptr);
+        ++ptr;
+    }
+    #endif
+}
+
+int read(const char* path)
+{
+    FILE* file = fopen(path, "rb");
+    if(!file)
+        return 0;
+
+    readff(file);
+
+    return !fclose(file);
+}
 
 void update_flags(uint16_t r)
 {
