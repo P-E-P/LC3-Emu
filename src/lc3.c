@@ -155,7 +155,11 @@ int main(int argc, char* argv[])
                 break;
 
             case OP_JMP:
-                reg[R_PC] = BR_OP(ins);
+                r0 = BR_OP(ins);
+                if(r0 == 0x7) /* RET instruction */
+                    reg[R_PC] = reg[R_R7];
+                else /* JMP instruction */
+                    reg[R_PC] = r0;
                 break;
 
             case OP_LEA:
