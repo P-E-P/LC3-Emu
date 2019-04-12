@@ -180,6 +180,10 @@ int main(int argc, char* argv[])
 
             case OP_TRAP:
                 switch(ins & 0xFF){
+                    case TRAP_GETC:
+                        reg[R_R0] = (uint16_t) getchar();
+                        break;
+
                     case TRAP_OUT:
                         putc((char)reg[R_R0], stdout);
                         fflush(stdout);
@@ -195,6 +199,7 @@ int main(int argc, char* argv[])
                         break;
 
                     case TRAP_IN:
+                        printf("Type a character: ");
                         reg[R_R0] = (uint16_t) getchar();
                         break;
 
