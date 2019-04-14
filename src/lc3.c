@@ -4,6 +4,8 @@
 #include <endian.h>
 
 #include "register.h"
+#include "kbd.h"
+#include "mmap_register.h"
 #include "opcode.h"
 #include "trap.h"
 #include "lc3.h"
@@ -86,6 +88,14 @@ inline void mem_write(uint16_t addr, uint16_t val)
 }
 inline uint16_t mem_read(uint16_t addr)
 {
+    if(addr == MMR_KBSR) {
+        if(check_key()) {
+            mem[MMR_KBSR] = (1 << 15);
+            mem[MMR_KBDR] = getchar();
+	} else {
+            mem[MMR_KBSR] = 0;
+        }
+    }
     return mem[addr];
 }
 
